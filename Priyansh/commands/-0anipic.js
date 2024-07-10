@@ -7,7 +7,7 @@ module.exports.config = {
   credits: "kshitiz",
   version: "1.0",
   cooldowns: 5,
-  hasPermmision: 0,
+  hasPermission: 0,
   description: "Get a random anime picture",
   commandCategory: "media",
   usages: "{p}anipic",
@@ -21,15 +21,19 @@ module.exports.handleEvent = async function ({ event, api }) {
   }, true);
 
   const cacheFolderPath = path.resolve(__dirname, "cache");
-  const imagePath = path.resolve(cacheFolderPath, "anipic_image.png");
-
-  // Ensure cache folder exists
-  if (!fs.existsSync(cacheFolderPath)) {
-    fs.mkdirSync(cacheFolderPath, { recursive: true });
-  }
+  const imagePath = path.join(cacheFolderPath, "anipic_image.png");
 
   try {
-    const response = await axios.get("https://pic.re/image", { responseType: "stream" });
+    // Ensure cache folder exists
+    if (!fs.existsSync(cacheFolderPath)) {
+      fs.mkdirSync(cacheFolderPath, { recursive: true });
+    }
+
+    const response = await axios({
+      method: "get",
+      url: "https://pic.re/image",
+      responseType: "stream",
+    });
 
     const writeStream = fs.createWriteStream(imagePath);
     response.data.pipe(writeStream);
@@ -37,34 +41,41 @@ module.exports.handleEvent = async function ({ event, api }) {
     writeStream.on("finish", () => {
       const stream = fs.createReadStream(imagePath);
       api.sendMessage({ attachment: stream }, threadID, (err) => {
-        if (err) console.error(err);
-        fs.unlink(imagePath, (err) => {
-          if (err) console.error(err);
-          console.log(`Deleted ${imagePath}`);
-        });
+        if (err) {
+          console.error("Failed to send message:", err);
+          cleanupAndReact("❌");
+        } else {
+          cleanupAndReact("✅");
+        }
       });
-
-      api.setMessageReaction("✅", messageID, (err) => {
-        if (err) console.error(err);
-      }, true);
     });
 
     writeStream.on("error", (err) => {
-      console.error(err);
-      api.sendMessage("Failed to fetch random anime picture. Please try again.", threadID, messageID);
-      api.setMessageReaction("❌", messageID, (err) => {
-        if (err) console.error(err);
-      }, true);
+      console.error("Error writing stream:", err);
+      cleanupAndReact("❌");
     });
+
   } catch (error) {
-    console.error(error);
-    api.sendMessage("An error occurred while fetching the anime picture.", threadID, messageID);
-    api.setMessageReaction("❌", messageID, (err) => {
-      if (err) console.error(err);
+    console.error("Error fetching anime picture:", error);
+    cleanupAndReact("❌");
+  }
+
+  function cleanupAndReact(reaction) {
+    fs.unlink(imagePath, (err) => {
+      if (err) console.error("Error deleting image file:", err);
+      console.log(`Deleted ${imagePath}`);
+    });
+
+    api.setMessageReaction(reaction, messageID, (err) => {
+      if (err) console.error("Error reacting to message:", err);
     }, true);
   }
 };
 
 module.exports.run = async function ({ event, api }) {
-  return api.sendMessage("Fetching a random anime picture...", event.threadID);
+  try {
+    await api.sendMessage("Fetching a random anime picture...", event.threadID);
+  } catch (error) {
+    console.error("Error sending initial message:", error);
+  }
 };
