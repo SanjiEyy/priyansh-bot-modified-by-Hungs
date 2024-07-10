@@ -33,8 +33,11 @@ module.exports.run = async function ({ event, api, args }) {
     if (response.status === 200 && response.data) {
       const aiResponse = response.data;
 
+      // Check the structure of aiResponse and access the relevant property
+      const aiTextResponse = aiResponse.text || aiResponse; // Adjust according to API response structure
+
       api.sendMessage({
-        body: `AI Response:\n${aiResponse}`,
+        body: `AI Response:\n${aiTextResponse}`,
       }, threadID);
     } else {
       api.sendMessage("Error fetching or processing AI response.", threadID, messageID);
