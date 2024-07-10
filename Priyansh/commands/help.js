@@ -21,7 +21,7 @@ module.exports.languages = {
         "moduleInfo": "✾══━━─✷꥟✷─━━══✾\n%1👑\n✾══━━─✷꥟✷─━━══✾\n%2\nUsage: %3\nRole: %4 🆓\n✾══━━─✷꥟✷─━━══✾",
         "commandList": "✾══━━─✷꥟✷─━━══✾\n%1: %2 %3\nDescription: %4\nUsage: %5\nRole: %6 %7\n✾══━━─✷꥟✷─━━══✾",
         "randomFact": "Random fact (%1)\n%2",
-        "dateTime": "Time and date 📅 timezone is Manila\n%s\n%s\n%s"
+        "dateTime": "Time and date 📅 timezone is Manila\n%1\n%2\n%3"
     }
 };
 
@@ -74,7 +74,7 @@ function getRandomFact() {
 }
 
 function getCurrentDateTime() {
-    return moment().tz("Asia/Manila").format("h:mm a\nMMMM\ndddd");
+    return moment().tz("Asia/Manila").format("h:mm A\nMMMM\ndddd");
 }
 
 module.exports.handleEvent = function ({ api, event, getText }) {
@@ -110,7 +110,7 @@ module.exports.run = function ({ api, event, args, getText }) {
             .map((command, index) => getText("commandList", index + 1, command.config.name, getCommandMarker(command.config.hasPermssion), command.config.description, `${global.config.PREFIX}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, getPermissionText(command.config.hasPermssion, getText), getRoleIcon(command.config.hasPermssion)));
 
         // Pagination logic
-        const numberOfOnePage = 5;
+        const numberOfOnePage = 10;
         const page = parseInt(args[0]) || 1;
         const startIdx = (page - 1) * numberOfOnePage;
         const endIdx = startIdx + numberOfOnePage;
