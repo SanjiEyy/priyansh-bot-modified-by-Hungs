@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports.config = {
-  name: "removebg",
+  name: "removebg2",
   credits: "yourname",
   version: "1.0",
   cooldowns: 5,
