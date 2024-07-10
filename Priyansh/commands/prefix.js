@@ -43,7 +43,7 @@ function getRandomMinecraftFact() {
 module.exports.config = {
     name: "prefix",
     version: "1.0.0",
-    hasPermssion: 0,
+    hasPermission: 0,
     credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
     description: "Get bot prefix and current time",
     commandCategory: "Dành cho Admin",
@@ -84,8 +84,8 @@ module.exports.handleEvent = async function ({ event, api }) {
 
         message += `✾══━━─✷꥟✷─━━══✾`;
 
-        // Get image from URL
-        const imageUrl = "https://imgur.com/a/r7cvJoe";
+        // Corrected image URL to an actual image link
+        const imageUrl = "https://i.imgur.com/0Hd3WYF.gifv";
         const response = await axios.get(imageUrl, { responseType: 'stream' });
 
         // Send the message with attachment from URL and add reaction "👑"
