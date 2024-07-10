@@ -1,8 +1,5 @@
 const { PREFIX } = global.config;
 const moment = require('moment-timezone');
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 
 // Function to generate random Minecraft facts
 function getRandomMinecraftFact() {
@@ -51,16 +48,13 @@ module.exports.config = {
     cooldowns: 5,
 };
 
-module.exports.handleEvent = async ({ event, api, Threads }) => {
-    const { threadID, messageID, body, senderID } = event;
+module.exports.handleEvent = async ({ event, api }) => {
+    const { threadID, body, senderID } = event;
 
     // Check if the sender is not the bot and if the credits match
-    if (senderID === global.data.botID || this.config.credits !== "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭") {
+    if (senderID === global.data.botID || module.exports.config.credits !== "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭") {
         return;
     }
-
-    const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
-    const prefix = threadSetting.PREFIX || PREFIX;
 
     const arr = [
         "mpre", "mprefix", "prefix", "dấu lệnh", "prefix của bot là gì", "daulenh", 
@@ -72,7 +66,7 @@ module.exports.handleEvent = async ({ event, api, Threads }) => {
 
     if (arr.includes(body.toLowerCase())) {
         let message = `✾══━━─✷꥟✷─━━══✾\n`;
-        message += `My prefix is ${prefix}!\n`;
+        message += `My prefix is ${PREFIX}!\n`;
 
         const timeInfo = moment.tz('Asia/Manila').format('h:mm A');
         const dateInfo = moment.tz('Asia/Manila').format('MMMM D');
@@ -87,24 +81,8 @@ module.exports.handleEvent = async ({ event, api, Threads }) => {
 
         message += `✾══━━─✷꥟✷─━━══✾`;
 
-        const gifUrl = 'https://i.imgur.com/xdldeUs.gif'; // Corrected URL to directly access the gif
-        const cacheFolderPath = path.resolve(__dirname, 'cache');
-        const gifPath = path.join(cacheFolderPath, 'prefix-gif.gif');
-
-        // Ensure cache folder exists
-        if (!fs.existsSync(cacheFolderPath)) {
-            fs.mkdirSync(cacheFolderPath);
-        }
-
-        // Download and save the GIF
-        const response = await axios.get(gifUrl, { responseType: 'arraybuffer' });
-        fs.writeFileSync(gifPath, response.data);
-
-        // Send the message with the GIF attachment
-        api.sendMessage({ body: message, attachment: fs.createReadStream(gifPath) }, threadID, (err) => {
-            if (err) console.error(err);
-            fs.unlinkSync(gifPath); // Clean up the file after sending
-        }, messageID);
+        // Send the message without any GIF attachment
+        api.sendMessage(message, threadID);
     }
 };
 
