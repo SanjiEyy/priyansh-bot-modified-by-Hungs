@@ -6,7 +6,7 @@ const request = require('request');
 module.exports.config = {
     name: "shawtytoktik",
     version: "1.0",
-    hasPermssion: 0,
+    hasPermission: 0,
     credits: "Kshitiz",
     description: "Sends a shawty toktik video",
     commandCategory: "fun",
@@ -24,11 +24,11 @@ module.exports.handleEvent = async function ({ event, api }) {
 
         const apiUrl = "https://shoti-srv1.onrender.com/api/v1/get";
 
-        const { data } = await axios.post(apiUrl, {
-            apikey: "$shoti-1ho3b41uiohngdbrgk8",
+        const response = await axios.post(apiUrl, {
+            apikey: "shoti-1ho3b41uiohngdbrgk8", // Corrected API key format
         });
 
-        const { url: videoUrl, user: { username, nickname } } = data.data;
+        const { url: videoUrl, user: { username, nickname } } = response.data.data;
 
         const cacheFolderPath = path.resolve(__dirname, 'cache');
         const tempVideoPath = path.join(cacheFolderPath, 'shoti.mp4');
@@ -51,18 +51,23 @@ module.exports.handleEvent = async function ({ event, api }) {
             attachment: fs.createReadStream(tempVideoPath)
         };
 
-        api.sendMessage(msg1, threadID, (err) => {
-            if (err) return console.error(err);
+        api.sendMessage(msg1, threadID, async (err) => {
+            if (err) {
+                console.error(err);
+                return api.sendMessage("Failed to send Babes. Please try again later.", threadID, messageID);
+            }
 
-            setTimeout(() => {
-                api.sendMessage(msg2, threadID, (err) => {
-                    if (err) return console.error(err);
-                    
+            setTimeout(async () => {
+                try {
+                    await api.sendMessage(msg2, threadID);
                     fs.unlink(tempVideoPath, (err) => {
                         if (err) console.error(err);
                         console.log(`Deleted ${tempVideoPath}`);
                     });
-                });
+                } catch (error) {
+                    console.error(error);
+                    api.sendMessage("Failed to send Toktik video. Please try again later.", threadID, messageID);
+                }
             }, 2000);
         });
 
@@ -73,5 +78,5 @@ module.exports.handleEvent = async function ({ event, api }) {
 };
 
 module.exports.run = async function ({ event, api }) {
-    return api.sendMessage("error", event.threadID); // Placeholder response, adjust as needed
+    return api.sendMessage("This command can only be triggered by an event.", event.threadID);
 };
