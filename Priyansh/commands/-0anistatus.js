@@ -14,15 +14,8 @@ module.exports.config = {
 };
 
 module.exports.handleEvent = async function ({ event, api }) {
-  // Check if the event is triggered by the command prefix
-  const prefix = this.config.prefix; // Assuming a prefix is defined somewhere
-  const message = event.body.toLowerCase().trim();
-  
-  if (!message.startsWith(prefix + "anistatus")) return; // Exit if not triggered by the command
-
   const { threadID, messageID } = event;
 
-  // Initialize thread-specific state if not already initialized
   if (!this.threadStates) {
     this.threadStates = {};
   }
@@ -31,7 +24,7 @@ module.exports.handleEvent = async function ({ event, api }) {
     this.threadStates[threadID] = {};
   }
 
-  api.setMessageReaction("🕐", messageID, (err) => {}, true);
+  api.setMessageReaction("🕐", messageID, (err) => { if (err) console.error(err); }, true);
 
   const cacheFolderPath = path.resolve(__dirname, "cache");
   const cacheFilePath = path.resolve(cacheFolderPath, `${Date.now()}.mp4`);
@@ -66,23 +59,20 @@ module.exports.handleEvent = async function ({ event, api }) {
             });
           });
 
-          api.setMessageReaction("✅", messageID, (err) => {}, true);
+          api.setMessageReaction("✅", messageID, (err) => { if (err) console.error(err); }, true);
         } else {
-          api.sendMessage("Error downloading the video.", threadID, messageID);
-          api.setMessageReaction("❌", messageID, (err) => {}, true);
+          throw new Error("Error downloading the video.");
         }
       } else {
-        api.sendMessage("Error fetching video URL.", threadID, messageID);
-        api.setMessageReaction("❌", messageID, (err) => {}, true);
+        throw new Error("Error fetching video URL.");
       }
     } else {
-      api.sendMessage("Error fetching data from external API.", threadID, messageID);
-      api.setMessageReaction("❌", messageID, (err) => {}, true);
+      throw new Error("Error fetching data from external API.");
     }
   } catch (err) {
     console.error(err);
-    api.sendMessage("An error occurred while processing the anistatus command.", threadID, messageID);
-    api.setMessageReaction("❌", messageID, (err) => {}, true);
+    api.sendMessage(`An error occurred: ${err.message}`, threadID, messageID);
+    api.setMessageReaction("❌", messageID, (err) => { if (err) console.error(err); }, true);
   }
 };
 
@@ -98,15 +88,15 @@ async function downloadVideo(url, cacheFilePath) {
       responseType: "arraybuffer"
     });
 
-    const cacheFolderPath = path.resolve(__dirname, "cache");
-
     // Ensure cache folder exists
+    const cacheFolderPath = path.dirname(cacheFilePath);
     if (!fs.existsSync(cacheFolderPath)) {
-      fs.mkdirSync(cacheFolderPath);
+      fs.mkdirSync(cacheFolderPath, { recursive: true });
     }
 
-    fs.writeFileSync(cacheFilePath, Buffer.from(response.data, "utf-8"));
+    fs.writeFileSync(cacheFilePath, Buffer.from(response.data));
   } catch (err) {
     console.error(err);
+    throw new Error("Failed to download video.");
   }
 }
