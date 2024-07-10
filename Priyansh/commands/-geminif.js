@@ -44,6 +44,7 @@ module.exports.run = async function ({ event, api, args }) {
 
         if (describeResponse.status === 200 && describeResponse.data) {
           const description = describeResponse.data;
+
           api.sendMessage({
             body: `Image Description:\n${description}`,
           }, threadID);
