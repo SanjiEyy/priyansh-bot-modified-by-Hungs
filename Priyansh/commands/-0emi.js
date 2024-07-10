@@ -65,7 +65,7 @@ module.exports.handleEvent = async function ({ event, api, args }) {
   }
 };
 
-module.exports.run = async function ({ event, api, args }) {
+module.exports.handleEvent = async function ({ event, api, args }) {
   const { threadID, messageID } = event;
   if (!args.length) {
     return api.sendMessage("Please provide a prompt for the image generation.", threadID, messageID);
