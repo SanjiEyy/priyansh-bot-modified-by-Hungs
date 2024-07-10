@@ -81,8 +81,13 @@ module.exports.handleEvent = async ({ event, api }) => {
 
         message += `✾══━━─✷꥟✷─━━══✾`;
 
-        // Send the message without any GIF attachment
-        api.sendMessage(message, threadID);
+        // Send the message and add reaction "👑"
+        api.sendMessage(message, threadID, (err, messageInfo) => {
+            if (err) return console.error(err);
+
+            // Add reaction "👑" to the message
+            api.setMessageReaction("👑", messageInfo.messageID);
+        });
     }
 };
 
