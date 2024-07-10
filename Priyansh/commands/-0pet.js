@@ -7,7 +7,7 @@ module.exports.config = {
   credits: "MILAN",
   version: "1.1",
   cooldowns: 10,
-  hasPermmision: 0,
+  hasPermission: 0,
   description: "Pet someone.",
   commandCategory: "tools",
   usages: "{p} [blank | reply | mention | uid]"
@@ -17,8 +17,8 @@ module.exports.handleEvent = async function ({ event, api }) {
   const { threadID, messageID, senderID, body } = event;
   let id;
   
-  if (body.indexOf('@') !== -1) {
-    id = Object.keys(event.mentions);
+  if (body.includes('@')) {
+    id = Object.keys(event.mentions)[0];
   } else {
     id = body.split(' ')[1] || senderID;
   }
@@ -30,7 +30,12 @@ module.exports.handleEvent = async function ({ event, api }) {
   const tempFilePath = path.resolve(__dirname, "temp.png");
 
   try {
-    const response = await axios.get(`https://samirxpikachu.onrender.com/pet?url=https://api-turtle.vercel.app/api/facebook/pfp?uid=${id}`, { responseType: 'stream' });
+    const response = await axios.get(`https://samirxpikachu.onrender.com/pet`, {
+      params: {
+        url: `https://api-turtle.vercel.app/api/facebook/pfp?uid=${id}`
+      },
+      responseType: 'stream'
+    });
 
     const writeStream = fs.createWriteStream(tempFilePath);
     response.data.pipe(writeStream);
