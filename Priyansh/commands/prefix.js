@@ -1,8 +1,6 @@
 const { PREFIX } = global.config;
 const moment = require('moment-timezone');
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 
 // Function to generate random Minecraft facts
 function getRandomMinecraftFact() {
@@ -84,14 +82,9 @@ module.exports.handleEvent = async function ({ event, api }) {
 
         message += `✾══━━─✷꥟✷─━━══✾`;
 
-        // Corrected image URL to an actual image link
-        const imageUrl = "https://i.imgur.com/0Hd3WYF.gifv";
-        const response = await axios.get(imageUrl, { responseType: 'stream' });
-
-        // Send the message with attachment from URL and add reaction "👑"
+        // Send the message without any attachment
         api.sendMessage({
-            body: message,
-            attachment: response.data
+            body: message
         }, threadID, (err, messageInfo) => {
             if (err) return console.error(err);
 
