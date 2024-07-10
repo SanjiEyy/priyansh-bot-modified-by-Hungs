@@ -14,8 +14,8 @@ module.exports.handleEvent = async function ({ api, event }) {
     let { nicknames } = await api.getThreadInfo(event.threadID);
     const nameBot = nicknames[api.getCurrentUserID()];
 
-    if (nameBot !== `》 ${global.config.PREFIX} 《 ❃ ➠${!global.config.BOTNAME ? " " : global.config.BOTNAME}`) {
-        api.changeNickname(`》 ${global.config.PREFIX} 《 ❃ ➠${!global.config.BOTNAME ? "Made by CatalizCS and SpermLord" : global.config.BOTNAME}`, threadID, api.getCurrentUserID());
+    if (nameBot !== `${global.config.NICKNAME}`) {
+        api.changeNickname(`${global.config.NICKNAME}`, threadID, api.getCurrentUserID());
     }
 };
 
