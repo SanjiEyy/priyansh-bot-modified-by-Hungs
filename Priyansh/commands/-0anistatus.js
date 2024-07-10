@@ -1,39 +1,112 @@
-const axios = require('axios');
+const axios = require("axios");
+const fs = require("fs");
+const path = require("path");
 
 module.exports.config = {
-    name: "anistatus",
-    version: "1.0.0",
-    hasPermssion: 0,
-    credits: "Your Name",
-    description: "Get a random anime status video.",
-    commandCategory: "Media",
-    usages: "",
-    cooldowns: 5,
+  name: "anistatus",
+  credits: "kshitiz",
+  version: "1.0",
+  cooldowns: 5,
+  hasPermmision: 0,
+  description: "Get a random anime status video",
+  commandCategory: "media",
+  usages: "{p}anistatus",
 };
 
-module.exports.run = async ({ api, event }) => {
-    try {
-        const response = await axios.get('https://ani-status.vercel.app/kshitiz');
-        const videoUrl = response.data.url;
+module.exports.handleEvent = async function ({ event, api }) {
+  // Check if the event is triggered by the command prefix
+  const prefix = this.config.prefix; // Assuming a prefix is defined somewhere
+  const message = event.body.toLowerCase().trim();
+  
+  if (!message.startsWith(prefix + "anistatus")) return; // Exit if not triggered by the command
 
-        // Send the video URL as a message
-        api.sendMessage(videoUrl, event.threadID, async (err, info) => {
-            if (err) {
-                console.error('Error sending anime status video URL:', err);
-                return api.sendMessage("An error occurred while sending the anime status video URL.", event.threadID);
-            }
+  const { threadID, messageID } = event;
 
-            // Add reactions after sending the message
-            try {
-                await api.react('⏰', info.messageID); // React with ⏰ emoji
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Delay for 2 seconds
-                await api.react('✅', info.messageID); // React with ✅ emoji
-            } catch (reactError) {
-                console.error('Error adding reaction:', reactError);
-            }
-        });
-    } catch (error) {
-        console.error('Error fetching anime status video:', error);
-        return api.sendMessage("An error occurred while fetching the anime status video.", event.threadID);
+  // Initialize thread-specific state if not already initialized
+  if (!this.threadStates) {
+    this.threadStates = {};
+  }
+
+  if (!this.threadStates[threadID]) {
+    this.threadStates[threadID] = {};
+  }
+
+  api.setMessageReaction("🕐", messageID, (err) => {}, true);
+
+  const cacheFolderPath = path.resolve(__dirname, "cache");
+  const cacheFilePath = path.resolve(cacheFolderPath, `${Date.now()}.mp4`);
+
+  try {
+    const apiUrl = "https://ani-status.vercel.app/kshitiz";
+    const response = await axios.get(apiUrl);
+
+    if (response.data.url) {
+      const tikTokUrl = response.data.url;
+      console.log(`TikTok Video URL: ${tikTokUrl}`);
+
+      const lado = `https://tikdl-video.vercel.app/tiktok?url=${encodeURIComponent(tikTokUrl)}`;
+      const puti = await axios.get(lado);
+
+      if (puti.data.videoUrl) {
+        const videoUrl = puti.data.videoUrl;
+        console.log(`Downloadable Video URL: ${videoUrl}`);
+
+        await downloadVideo(videoUrl, cacheFilePath);
+
+        if (fs.existsSync(cacheFilePath)) {
+          const stream = fs.createReadStream(cacheFilePath);
+          api.sendMessage({
+            body: "Random anime status video.",
+            attachment: stream
+          }, threadID, (err) => {
+            if (err) console.error(err);
+            fs.unlink(cacheFilePath, (err) => {
+              if (err) console.error(err);
+              console.log(`Deleted ${cacheFilePath}`);
+            });
+          });
+
+          api.setMessageReaction("✅", messageID, (err) => {}, true);
+        } else {
+          api.sendMessage("Error downloading the video.", threadID, messageID);
+          api.setMessageReaction("❌", messageID, (err) => {}, true);
+        }
+      } else {
+        api.sendMessage("Error fetching video URL.", threadID, messageID);
+        api.setMessageReaction("❌", messageID, (err) => {}, true);
+      }
+    } else {
+      api.sendMessage("Error fetching data from external API.", threadID, messageID);
+      api.setMessageReaction("❌", messageID, (err) => {}, true);
     }
+  } catch (err) {
+    console.error(err);
+    api.sendMessage("An error occurred while processing the anistatus command.", threadID, messageID);
+    api.setMessageReaction("❌", messageID, (err) => {}, true);
+  }
 };
+
+module.exports.run = async function ({ event, api }) {
+  return api.sendMessage("Fetching a random anime status video...", event.threadID);
+};
+
+async function downloadVideo(url, cacheFilePath) {
+  try {
+    const response = await axios({
+      method: "GET",
+      url: url,
+      responseType: "arraybuffer"
+    });
+
+    const cacheFolderPath = path.resolve(__dirname, "cache");
+
+    // Ensure cache folder exists
+    if (!fs.existsSync(cacheFolderPath)) {
+      fs.mkdirSync(cacheFolderPath);
+    }
+
+    fs.writeFileSync(cacheFilePath, Buffer.from(response.data, "utf-8"));
+  } catch (err) {
+    console.error(err);
+  }
+}
