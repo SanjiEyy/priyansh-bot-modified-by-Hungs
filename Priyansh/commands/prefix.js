@@ -1,5 +1,8 @@
 const { PREFIX } = global.config;
 const moment = require('moment-timezone');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
 // Function to generate random Minecraft facts
 function getRandomMinecraftFact() {
@@ -48,7 +51,7 @@ module.exports.config = {
     cooldowns: 5,
 };
 
-module.exports.handleEvent = async ({ event, api }) => {
+module.exports.handleEvent = async function ({ event, api }) {
     const { threadID, body, senderID } = event;
 
     // Check if the sender is not the bot and if the credits match
@@ -81,10 +84,14 @@ module.exports.handleEvent = async ({ event, api }) => {
 
         message += `✾══━━─✷꥟✷─━━══✾`;
 
+        // Get image from URL
+        const imageUrl = "https://imgur.com/a/r7cvJoe";
+        const response = await axios.get(imageUrl, { responseType: 'stream' });
+
         // Send the message with attachment from URL and add reaction "👑"
         api.sendMessage({
             body: message,
-            attachment: await global.utils.getStreamFromURL("https://imgur.com/a/r7cvJoe")
+            attachment: response.data
         }, threadID, (err, messageInfo) => {
             if (err) return console.error(err);
 
@@ -94,6 +101,6 @@ module.exports.handleEvent = async ({ event, api }) => {
     }
 };
 
-module.exports.run = async ({ event, api }) => {
-    return api.sendMessage("error", event.threadID); // Placeholder response, adjust as needed
+module.exports.run = async function ({ event, api }) {
+    return api.sendMessage("This command is triggered by specific keywords in the chat. Try typing one of those keywords to see it in action.", event.threadID);
 };
