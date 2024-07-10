@@ -13,17 +13,13 @@ module.exports.config = {
   usages: "{p}anistatus",
 };
 
-module.exports.handleEvent = async function ({ event, api }) {
+module.exports.run = async function ({ event, api }) {
   const { threadID, messageID } = event;
 
-  api.setMessageReaction("🕐", messageID, (err) => {
-    if (err) console.error(err);
-  }, true);
-
-  const cacheFolderPath = path.resolve(__dirname, "cache");
-  const cacheFilePath = path.resolve(cacheFolderPath, `${Date.now()}.mp4`);
-
   try {
+    const cacheFolderPath = path.resolve(__dirname, "cache");
+    const cacheFilePath = path.resolve(cacheFolderPath, `${Date.now()}.mp4`);
+
     // Ensure cache folder exists
     if (!fs.existsSync(cacheFolderPath)) {
       fs.mkdirSync(cacheFolderPath, { recursive: true });
@@ -76,10 +72,6 @@ module.exports.handleEvent = async function ({ event, api }) {
       if (err) console.error(err);
     }, true);
   }
-};
-
-module.exports.run = async function ({ event, api }) {
-  return api.sendMessage("Fetching a random anime status video...", event.threadID);
 };
 
 async function downloadVideo(url, cacheFilePath) {
