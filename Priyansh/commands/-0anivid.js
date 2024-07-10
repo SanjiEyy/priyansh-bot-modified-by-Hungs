@@ -16,14 +16,20 @@ module.exports.config = {
 module.exports.run = async function ({ event, api }) {
     const { threadID, messageID } = event;
 
-    api.setMessageReaction("🕐", messageID, (err) => {}, true);
+    api.setMessageReaction("🕐", messageID, (err) => {
+        if (err) console.error(err);
+    }, true);
 
     try {
         const response = await axios.get("https://ani-vid-0kr2.onrender.com/kshitiz");
         const postData = response.data.posts;
+
+        if (!postData || postData.length === 0) {
+            throw new Error("No posts available.");
+        }
+
         const randomIndex = Math.floor(Math.random() * postData.length);
         const randomPost = postData[randomIndex];
-
         const videoUrls = randomPost.map(url => url.replace(/\\/g, "/"));
         const selectedUrl = videoUrls[Math.floor(Math.random() * videoUrls.length)];
 
@@ -53,10 +59,26 @@ module.exports.run = async function ({ event, api }) {
                     console.log(`Deleted ${tempVideoPath}`);
                 });
             });
-            api.setMessageReaction("✅", messageID, (err) => {}, true);
+            api.setMessageReaction("✅", messageID, (err) => {
+                if (err) console.error(err);
+            }, true);
+        });
+
+        writer.on("error", (err) => {
+            console.error("Stream writer error:", err);
+            fs.unlink(tempVideoPath, (unlinkErr) => {
+                if (unlinkErr) console.error(unlinkErr);
+            });
+            api.sendMessage("Sorry, an error occurred while processing the video.", threadID, messageID);
+            api.setMessageReaction("❌", messageID, (err) => {
+                if (err) console.error(err);
+            }, true);
         });
     } catch (error) {
-        console.error(error);
+        console.error("Error:", error);
         api.sendMessage("Sorry, an error occurred while processing your request.", threadID, messageID);
+        api.setMessageReaction("❌", messageID, (err) => {
+            if (err) console.error(err);
+        }, true);
     }
 };
