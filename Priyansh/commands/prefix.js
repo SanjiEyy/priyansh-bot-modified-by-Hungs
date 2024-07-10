@@ -66,7 +66,7 @@ module.exports.handleEvent = async ({ event, api }) => {
 
     if (arr.includes(body.toLowerCase())) {
         let message = `✾══━━─✷꥟✷─━━══✾\n`;
-        message += `My prefix is ${PREFIX}!\n`;
+        message += `My prefix is ${PREFIX}\n`;
 
         const timeInfo = moment.tz('Asia/Manila').format('h:mm A');
         const dateInfo = moment.tz('Asia/Manila').format('MMMM D');
