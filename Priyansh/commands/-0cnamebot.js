@@ -9,20 +9,21 @@ module.exports.config = {
     cooldowns: 5
 };
 
-module.exports.handleEvent = async function ({ api, event }) {
+
+module.exports.handleEvent = async function ({ api, args, event, client, __GLOBAL, Threads, Currencies }) {
     const { threadID } = event;
     let { nicknames } = await api.getThreadInfo(event.threadID);
     const nameBot = nicknames[api.getCurrentUserID()];
-
-    if (nameBot !== `${global.config.NICKNAME}`) {
-        api.changeNickname(`${global.config.NICKNAME}`, threadID, api.getCurrentUserID());
+    
+    if (nameBot !== global.config.NICKNAME) {
+        api.changeNickname(global.config.NICKNAME, threadID, api.getCurrentUserID());
     }
-};
+}
 
-module.exports.run = async function ({ api, event, Threads }) {
+module.exports.run = async({ api, event, Threads }) => {
     let data = (await Threads.getData(event.threadID)).data || {};
-
-    if (typeof data["cnamebot"] == "undefined" || data["cnamebot"] == false) {
+    
+    if (typeof data["cnamebot"] === "undefined" || data["cnamebot"] === false) {
         data["cnamebot"] = true;
     } else {
         data["cnamebot"] = false;
@@ -30,4 +31,6 @@ module.exports.run = async function ({ api, event, Threads }) {
     
     await Threads.setData(event.threadID, { data });
     global.data.threadData.set(parseInt(event.threadID), data);
-};
+    
+    return api.sendMessage(`✅ ${(data["cnamebot"] === true) ? "Turn on" : "Turn off"} successfully cnamebot!`, event.threadID);
+}
