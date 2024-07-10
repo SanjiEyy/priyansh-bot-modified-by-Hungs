@@ -4,7 +4,7 @@ const path = require('path');
 const request = require('request');
 
 module.exports.config = {
-    name: "shoti",
+    name: "shawtytoktik",
     version: "1.0",
     hasPermssion: 0,
     credits: "Kshitiz",
@@ -14,12 +14,8 @@ module.exports.config = {
     cooldowns: 28,
 };
 
-module.exports.handleEvent = async function ({ event, api, command }) {
-    const { threadID, messageID, senderID, body } = event;
-
-    // Check if the message is a command trigger
-    const prefix = command.prefix; // Assuming a prefix is defined somewhere
-    if (!body.startsWith(prefix + this.config.name)) return; // Exit if not triggered by the command
+module.exports.handleEvent = async function ({ event, api }) {
+    const { threadID, messageID } = event;
 
     try {
         const msg1 = {
@@ -55,21 +51,27 @@ module.exports.handleEvent = async function ({ event, api, command }) {
             attachment: fs.createReadStream(tempVideoPath)
         };
 
-        api.sendMessage(msg1, threadID, messageID);
-        setTimeout(() => {
-            api.sendMessage(msg2, threadID, messageID);
-            fs.unlink(tempVideoPath, (err) => {
-                if (err) console.error(err);
-                console.log(`Deleted ${tempVideoPath}`);
-            });
-        }, 2000);
+        api.sendMessage(msg1, threadID, (err) => {
+            if (err) return console.error(err);
+
+            setTimeout(() => {
+                api.sendMessage(msg2, threadID, (err) => {
+                    if (err) return console.error(err);
+                    
+                    fs.unlink(tempVideoPath, (err) => {
+                        if (err) console.error(err);
+                        console.log(`Deleted ${tempVideoPath}`);
+                    });
+                });
+            }, 2000);
+        });
 
     } catch (error) {
         console.error(error);
-        api.sendMessage(`${error}`, threadID, messageID);
+        api.sendMessage(`Error: ${error.message}`, threadID, messageID);
     }
 };
 
 module.exports.run = async function ({ event, api }) {
-    return api.sendMessage("This command is meant to be triggered by an event.", event.threadID);
+    return api.sendMessage("error", event.threadID); // Placeholder response, adjust as needed
 };
