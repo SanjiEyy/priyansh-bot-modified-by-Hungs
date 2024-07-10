@@ -18,7 +18,7 @@ module.exports.config = {
 
 module.exports.languages = {
     "en": {
-        "moduleInfo": "✾══━━─✷꥟✷─━━══✾\n%1👑\n✾══━━─✷꥟✷─━━══✾\n%2\nUsage: %3\nRole: %4 🆓\n✾══━━─✷꥟✷─━━══✾",
+        "moduleInfo": "✾══━━─✷꥟✷─━━══✾\n%1👑\n✾══━━─✷꥟✷─━━══✾\n%2\nUsage: %3\nRole: %4 🆓\nTotal Commands: %5\n✾══━━─✷꥟✷─━━══✾",
         "commandList": "✾══━━─✷꥟✷─━━══✾\n%1: %2 %3\nDescription: %4\nUsage: %5\nRole: %6 %7\n✾══━━─✷꥟✷─━━══✾",
         "randomFact": "Random fact (%1)\n%2",
         "dateTime": "Time and date 📅 timezone is Manila\n%1\n%2\n%3"
@@ -93,7 +93,7 @@ module.exports.handleEvent = function ({ api, event, getText }) {
     const dateTime = getCurrentDateTime();
     const [time, month, day] = dateTime.split("\n");
 
-    const formattedMessage = getText("moduleInfo", command.config.name, command.config.description, `${prefix}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, getPermissionText(command.config.hasPermssion, getText));
+    const formattedMessage = getText("moduleInfo", command.config.name, command.config.description, `${prefix}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, getPermissionText(command.config.hasPermssion, getText), commands.size);
     const finalMessage = `${formattedMessage}\n${getText("randomFact", randomFactData.topic, randomFactData.fact)}\n${getText("dateTime", time, month, day)}`;
 
     return api.sendMessage(finalMessage, threadID, messageID);
@@ -116,7 +116,7 @@ module.exports.run = function ({ api, event, args, getText }) {
         const endIdx = startIdx + numberOfOnePage;
         const commandsPage = arrayInfo.slice(startIdx, endIdx);
 
-        const pageInfo = `✾══━━─✷꥟✷─━━══✾\n⚙ Total Pages: ${page}/${Math.ceil(arrayInfo.length / numberOfOnePage)}\n`;
+        const pageInfo = `✾══━━─✷꥟✷─━━══✾\n⚙ Total Pages: ${page}/${Math.ceil(arrayInfo.length / numberOfOnePage)}\nTime and date 📅 timezone is Manila\n${getCurrentDateTime()}\n${getText("randomFact", getRandomFact().topic, getRandomFact().fact)}`;
 
         const messageToSend = commandsPage.join("\n") + `\n${pageInfo}`;
 
@@ -130,7 +130,7 @@ module.exports.run = function ({ api, event, args, getText }) {
     const dateTime = getCurrentDateTime();
     const [time, month, day] = dateTime.split("\n");
 
-    const formattedMessage = getText("moduleInfo", command.config.name, command.config.description, `${global.config.PREFIX}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, getPermissionText(command.config.hasPermssion, getText));
+    const formattedMessage = getText("moduleInfo", command.config.name, command.config.description, `${global.config.PREFIX}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, getPermissionText(command.config.hasPermssion, getText), commands.size);
     const finalMessage = `${formattedMessage}\n${getText("randomFact", randomFactData.topic, randomFactData.fact)}\n${getText("dateTime", time, month, day)}`;
 
     return api.sendMessage(finalMessage, threadID, messageID);
