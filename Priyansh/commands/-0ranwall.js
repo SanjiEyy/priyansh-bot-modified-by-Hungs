@@ -11,7 +11,7 @@ module.exports.config = {
     cooldowns: 5
 };
 
-module.exports.run = async function ({ api, event, args }) {
+module.exports.handleEvent = async function ({ api, event, args }) {
     const threadID = event.threadID;
 
     // Extracting recipient, message, and sender from arguments
