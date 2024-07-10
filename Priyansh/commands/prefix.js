@@ -81,8 +81,11 @@ module.exports.handleEvent = async ({ event, api }) => {
 
         message += `✾══━━─✷꥟✷─━━══✾`;
 
-        // Send the message and add reaction "👑"
-        api.sendMessage(message, threadID, (err, messageInfo) => {
+        // Send the message with attachment from URL and add reaction "👑"
+        api.sendMessage({
+            body: message,
+            attachment: await global.utils.getStreamFromURL("https://imgur.com/a/r7cvJoe")
+        }, threadID, (err, messageInfo) => {
             if (err) return console.error(err);
 
             // Add reaction "👑" to the message
