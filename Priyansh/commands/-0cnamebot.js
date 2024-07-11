@@ -9,14 +9,13 @@ module.exports.config = {
     cooldowns: 5
 };
 
-
-module.exports.handleEvent = async function ({ api, args, event, client, __GLOBAL, Threads, Currencies }) {
+module.exports.handleEvent = async function ({ api, event }) {
     const { threadID } = event;
     let { nicknames } = await api.getThreadInfo(event.threadID);
     const nameBot = nicknames[api.getCurrentUserID()];
     
     if (nameBot !== global.config.NICKNAME) {
-        api.changeNickname(global.config.NICKNAME, threadID, api.getCurrentUserID());
+        await api.changeNickname(global.config.NICKNAME, threadID, api.getCurrentUserID());
     }
 }
 
